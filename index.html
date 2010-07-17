@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <title>letters</title>
+    <script type="text/javascript" src="javascript/make_seven.js"></script>
+    <script type="text/javascript" src="javascript/ickit.js"></script>
+    <script type="text/javascript">
+      var ck;
+      var on_load = function(){
+        ck = new ICKit("stage",FirstScene,{'background-color':'#DAE8F2'});
+        ck.draw();
+      };
+      var FirstScene = ICKit.Scene.extend({
+        setup:function(){
+          var self = this,
+              sc_0,
+              lc_0;
+          var create_shadow_casters = function(){
+            sc_0 = new ShadowCaster(40, 32, 20, 20, {'background-color':'#008800'});
+            self.add(sc_0);
+          };
+          create_shadow_casters();
+          var create_light_casters = function(){
+            lc_0 = new LightCaster(180, 82, {'background-color':'#008888'});
+            self.add(lc_0);
+          };
+          create_light_casters();
+          var cast_shadows = function(){
+            //console.log(sc_0.vertices)
+          };
+          cast_shadows();
+        }
+      });
+      var ShadowCaster = ICKit.DisplayObject.extend({
+        constructor:function(x, y, width, height, style){
+          this.base(x, y, style);
+          this.is_rectangle(width, height);
+        }
+      });
+      var LightCaster = ICKit.DisplayObject.extend({
+        constructor:function(x, y, style){
+          this.base(x, y, style);
+          this.is_polygon(5, 10, 0);
+        }
+      });
+    </script>
+    <style type="text/css">
+      #stage { width:280px; height:180px; margin:0 auto; }
+    </style>
+  </head>
+  <body onload="on_load()">
+    <div id="stage">
+    </div>
+  </body>
+</html>

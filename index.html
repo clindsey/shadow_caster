@@ -65,7 +65,8 @@
       var ShadowCaster = ICKit.DisplayObject.extend({
         constructor:function(x, y, width, height, style){
           this.base(x, y, style);
-          this.is_rectangle(width, height);
+          //this.is_rectangle(width, height);
+          this.is_polygon(width, 6, 0)
         }
       });
       var LightCaster = ICKit.DisplayObject.extend({

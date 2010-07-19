@@ -34,8 +34,8 @@
               var next = sc_0.vertices[(i + 1) % l];
               var vx = curr.x - next.x;
               var vy = curr.y - next.y;
-              var lx = lc_0.x - (curr.x + sc_0.x);
-              var ly = lc_0.y - (curr.y + sc_0.y);
+              var lx = (sc_0.x - curr.x) - lc_0.x;
+              var ly = (sc_0.y - curr.y) - lc_0.y;
               var dp = vx * lx + vy * ly;
               faces[i] = dp > 0;
             };
@@ -48,7 +48,7 @@
               else if(!curr && next) shadow_end = i;
             };
             var shadow = new ICKit.DisplayObject(0, 0, {'background-color':'#000000'});
-            for(var i = shadow_start; i > shadow_end; i--){
+            for(var i = shadow_end; i > shadow_start; i--){
               shadow.add_vertex({'x':sc_0.x + sc_0.vertices[i].x,'y':sc_0.y + sc_0.vertices[i].y});
             };
             for(var i = shadow_end; i < shadow_start; i++){

@@ -23,7 +23,7 @@
             ck.draw();
           };
           var create_shadow_casters = function(){
-            sc_0 = new ShadowCaster(120, 70, 20, 20, {'background-color':'#008800'});
+            sc_0 = new ShadowCaster(120, 70, 20, 40, {'background-color':'#008800'});
             self.add(sc_0);
           };
           create_shadow_casters();
@@ -33,6 +33,11 @@
           };
           create_light_casters();
           var shadow = new ICKit.DisplayObject(0, 0, {'background-color':'#000000'});
+          self.add(shadow);
+          var line_0 = new Line({'x':0,'y':0}, {'x':0,'y':0}, '#880000');
+          self.add(line_0);
+          var line_1 = new Line({'x':0,'y':0}, {'x':0,'y':0}, '#880000');
+          self.add(line_1);
           var cast_shadows = function(){
             var faces = [];
             for(var i = 0, l = sc_0.vertices.length; i < l; i++){
@@ -40,24 +45,30 @@
               var next = sc_0.vertices[(i + 1) % l];
               var vx = curr.x - next.x;
               var vy = curr.y - next.y;
-              var lx = (curr.x) - (lc_0.x - sc_0.x);
-              var ly = (curr.y) - (lc_0.y - sc_0.y);
+              var lx = lc_0.x - (sc_0.x + curr.x);
+              var ly = lc_0.y - (sc_0.y + curr.y);
               var dp = vx * lx + vy * ly;
               faces[i] = dp > 0;
             };
             var shadow_start,
                 shadow_end;
+            var fl = faces.length - 1;
             for(var i = sc_0.vertices.length - 1, l = 0, v_l = sc_0.vertices.length; i >= l; i--){
-              var curr = faces[i];
-              var next = faces[(i + 1) % v_l];
+              var curr = faces[fl];
+              var next = faces[fl - 1 >= 0 ? fl - 1 : faces.length - 1];
+              fl--;
               if(curr && !next) shadow_start = i;
-              else if(!curr && next) shadow_end = i;
+              if(!curr && next) shadow_end = i;
             };
             shadow.vertices = [];
-            for(var i = shadow_start; i >= shadow_end; i--){
-              shadow.add_vertex({'x':sc_0.x + sc_0.vertices[i].x,'y':sc_0.y + sc_0.vertices[i].y});
-            };
-            self.add(shadow);
+            line_0.vertices[0] = {'x':lc_0.x,'y':lc_0.y};
+            line_0.vertices[1] = {'x':sc_0.x + sc_0.vertices[shadow_start].x,'y':sc_0.y + sc_0.vertices[shadow_start].y};
+            line_1.vertices[0] = {'x':lc_0.x,'y':lc_0.y};
+            line_1.vertices[1] = {'x':sc_0.x + sc_0.vertices[shadow_end].x,'y':sc_0.y + sc_0.vertices[shadow_end].y};
+            //for(var i = shadow_end; i >= shadow_start; i--){
+            //  shadow.add_vertex({'x':sc_0.x + sc_0.vertices[i].x,'y':sc_0.y + sc_0.vertices[i].y});
+            //};
+            //
           };
           cast_shadows();
         }
@@ -66,13 +77,26 @@
         constructor:function(x, y, width, height, style){
           this.base(x, y, style);
           //this.is_rectangle(width, height);
-          this.is_polygon(width, 6, 0)
+          this.is_polygon(width, 20, 0)
         }
       });
       var LightCaster = ICKit.DisplayObject.extend({
         constructor:function(x, y, style){
           this.base(x, y, style);
           this.is_polygon(5, 10, 0);
+        }
+      });
+      var Line = ICKit.DisplayObject.extend({
+        constructor:function(start_point, end_point, color){
+          this.base(start_point.x, start_point.y, {'border-width':1,'border-color':color,'background-color':color});
+          this.add_vertex({'x':0,'y':0});
+          this.add_vertex({'x':end_point.x - start_point.x,'y':end_point.y - start_point.y});
+          var self = this;
+          this.extend({
+            'update_end':function(new_point){
+              this.vertices[1] = {'x':new_point.x - self.x, 'y':new_point.y - self.y};
+            }
+          });
         }
       });
     </script>

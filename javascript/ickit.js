@@ -452,8 +452,8 @@
 					plot_x,
 					plot_y;
 			for(point_index = 0; point_index <= 360; point_index += point_increment){
-				plot_x = Math.sin(Math.convert_to_radians(point_index + this.rotation)) * radius;
-				plot_y = Math.cos(Math.convert_to_radians(point_index + this.rotation)) * radius;
+				plot_x = Math.sin(Math.convert_to_radians(point_index + this.rotation + 180)) * (0 - radius);
+				plot_y = Math.cos(Math.convert_to_radians(point_index + this.rotation + 180)) * radius;
 				this.add_vertex({'x':plot_x,'y':plot_y});
 			};
 		},

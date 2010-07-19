@@ -22,27 +22,32 @@
           };
           create_shadow_casters();
           var create_light_casters = function(){
-            lc_0 = new LightCaster(10, 10, {'background-color':'#008888'});
+            lc_0 = new LightCaster(180, 12, {'background-color':'#008888'});
             self.add(lc_0);
           };
           create_light_casters();
           var cast_shadows = function(){
+            //console.log(sc_0.vertices);
             var faces = [];
             for(var i = 0, l = sc_0.vertices.length; i < l; i++){
               var curr = sc_0.vertices[i];
               var next = sc_0.vertices[(i + 1) % l];
-              var nx = (next.x + curr.x) / 2;
-              var ny = (next.y + curr.y) / 2;
-              var lx = lc_0.x - nx;
-              var ly = lc_0.y - ny;
-              var bx = 0 - (next.y - curr.y);
-              var by = next.x - curr.x;
-              if(lx * bx + ly * by > 0) faces[i] = false;
-              console.log(faces[i])
+              var vx = next.x - curr.x;
+              var vy = next.y - curr.y;
+              var lx = lc_0.x - (next.x + sc_0.x);
+              var ly = lc_0.y - (next.y + sc_0.y);
+              var dp = vx * lx + vy * ly;
+              faces[i] = dp > 0;
             };
+            var shadow_start,
+                shadow_end;
             for(var i = 0, l = sc_0.vertices.length; i < l; i++){
-              
+              var curr = faces[i];
+              var next = faces[(i + 1) % l];
+              if(curr && !next) shadow_start = i;
+              else if(!curr && next) shadow_end = i;
             };
+            console.log(shadow_start, shadow_end)
           };
           cast_shadows();
         }
@@ -50,8 +55,8 @@
       var ShadowCaster = ICKit.DisplayObject.extend({
         constructor:function(x, y, width, height, style){
           this.base(x, y, style);
-          this.is_rectangle(width, height);
-          //this.is_polygon(width, 10, 0);
+          //this.is_rectangle(width, height);
+          this.is_polygon(width, 10, 0);
         }
       });
       var LightCaster = ICKit.DisplayObject.extend({

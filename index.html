@@ -34,9 +34,9 @@
           create_light_casters();
           var shadow = new ICKit.DisplayObject(0, 0, {'background-color':'#000000'});
           self.add(shadow);
-          var line_0 = new Line({'x':0,'y':0}, {'x':0,'y':0}, '#880000');
+          var line_0 = new Line({'x':0,'y':0}, {'x':0,'y':0}, '#000000');
           self.add(line_0);
-          var line_1 = new Line({'x':0,'y':0}, {'x':0,'y':0}, '#880000');
+          var line_1 = new Line({'x':0,'y':0}, {'x':0,'y':0}, '#000000');
           self.add(line_1);
           var cast_shadows = function(){
             var faces = [];
@@ -45,8 +45,8 @@
               var next = sc_0.vertices[(i + 1) % l];
               var vx = curr.x - next.x;
               var vy = curr.y - next.y;
-              var lx = lc_0.x - (sc_0.x + curr.x);
-              var ly = lc_0.y - (sc_0.y + curr.y);
+              var lx = lc_0.x - (sc_0.x - curr.x);
+              var ly = lc_0.y - (sc_0.y - curr.y);
               var dp = vx * lx + vy * ly;
               faces[i] = dp > 0;
             };
@@ -60,6 +60,8 @@
               if(curr && !next) shadow_start = i;
               if(!curr && next) shadow_end = i;
             };
+            shadow_start = (shadow_start + (sc_0.vertices.length >> 2) - 1) % sc_0.vertices.length;
+            shadow_end = (shadow_end + (sc_0.vertices.length >> 2) + 1) % sc_0.vertices.length;
             shadow.vertices = [];
             line_0.vertices[0] = {'x':lc_0.x,'y':lc_0.y};
             line_0.vertices[1] = {'x':sc_0.x + sc_0.vertices[shadow_start].x,'y':sc_0.y + sc_0.vertices[shadow_start].y};

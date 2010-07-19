@@ -27,7 +27,6 @@
           };
           create_light_casters();
           var cast_shadows = function(){
-            //console.log(sc_0.vertices);
             var faces = [];
             for(var i = 0, l = sc_0.vertices.length; i < l; i++){
               var curr = sc_0.vertices[i];
@@ -51,14 +50,6 @@
             for(var i = shadow_end; i > shadow_start; i--){
               shadow.add_vertex({'x':sc_0.x + sc_0.vertices[i].x,'y':sc_0.y + sc_0.vertices[i].y});
             };
-            for(var i = shadow_end; i < shadow_start; i++){
-              //sc_0.vertices[i].x -= 5;
-              //console.log(i, );
-              //var v = Math.atan2(lc_0.x - (sc_0.x + sc_0.vertices[i].x), lc_0.y - (sc_0.y + sc_0.vertices[i].y)) / Math.PI * -180;
-              //var x = 20 * Math.sin((v) * Math.PI / 180);
-              //var y = 20 * Math.cos((v) * Math.PI / 180);
-              //shadow.add_vertex({'x':sc_0.x + x,'y':sc_0.y + y});
-            };
             self.add(shadow);
           };
           cast_shadows();
@@ -67,8 +58,7 @@
       var ShadowCaster = ICKit.DisplayObject.extend({
         constructor:function(x, y, width, height, style){
           this.base(x, y, style);
-          //this.is_rectangle(width, height);
-          this.is_polygon(width, 20, 0);
+          this.is_rectangle(width, height);
         }
       });
       var LightCaster = ICKit.DisplayObject.extend({

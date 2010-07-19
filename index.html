@@ -34,8 +34,8 @@
               var next = sc_0.vertices[(i + 1) % l];
               var vx = curr.x - next.x;
               var vy = curr.y - next.y;
-              var lx = (sc_0.x - curr.x) - lc_0.x;
-              var ly = (sc_0.y - curr.y) - lc_0.y;
+              var lx = (curr.x) - lc_0.x;
+              var ly = (curr.y) - lc_0.y;
               var dp = vx * lx + vy * ly;
               faces[i] = dp > 0;
             };

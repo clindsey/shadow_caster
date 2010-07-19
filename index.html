@@ -47,7 +47,7 @@
               else if(!curr && next) shadow_end = i;
             };
             var shadow = new ICKit.DisplayObject(0, 0, {'background-color':'#000000'});
-            for(var i = shadow_end; i > shadow_start; i--){
+            for(var i = shadow_end; i >= shadow_start; i--){
               shadow.add_vertex({'x':sc_0.x + sc_0.vertices[i].x,'y':sc_0.y + sc_0.vertices[i].y});
             };
             self.add(shadow);

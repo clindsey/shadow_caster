@@ -17,12 +17,12 @@
               sc_0,
               lc_0;
           var create_shadow_casters = function(){
-            sc_0 = new ShadowCaster(40, 40, 20, 20, {'background-color':'#008800'});
+            sc_0 = new ShadowCaster(100, 140, 20, 20, {'background-color':'#008800'});
             self.add(sc_0);
           };
           create_shadow_casters();
           var create_light_casters = function(){
-            lc_0 = new LightCaster(180, 12, {'background-color':'#008888'});
+            lc_0 = new LightCaster(180, 20, {'background-color':'#008888'});
             self.add(lc_0);
           };
           create_light_casters();
@@ -32,22 +32,34 @@
             for(var i = 0, l = sc_0.vertices.length; i < l; i++){
               var curr = sc_0.vertices[i];
               var next = sc_0.vertices[(i + 1) % l];
-              var vx = next.x - curr.x;
-              var vy = next.y - curr.y;
-              var lx = lc_0.x - (next.x + sc_0.x);
-              var ly = lc_0.y - (next.y + sc_0.y);
+              var vx = curr.x - next.x;
+              var vy = curr.y - next.y;
+              var lx = lc_0.x - (curr.x + sc_0.x);
+              var ly = lc_0.y - (curr.y + sc_0.y);
               var dp = vx * lx + vy * ly;
               faces[i] = dp > 0;
             };
             var shadow_start,
                 shadow_end;
-            for(var i = 0, l = sc_0.vertices.length; i < l; i++){
+            for(var i = sc_0.vertices.length - 1, l = 0, v_l = sc_0.vertices.length; i >= l; i--){
               var curr = faces[i];
-              var next = faces[(i + 1) % l];
+              var next = faces[(i + 1) % v_l];
               if(curr && !next) shadow_start = i;
               else if(!curr && next) shadow_end = i;
             };
-            console.log(shadow_start, shadow_end)
+            var shadow = new ICKit.DisplayObject(0, 0, {'background-color':'#000000'});
+            for(var i = shadow_start; i > shadow_end; i--){
+              shadow.add_vertex({'x':sc_0.x + sc_0.vertices[i].x,'y':sc_0.y + sc_0.vertices[i].y});
+            };
+            for(var i = shadow_end; i < shadow_start; i++){
+              //sc_0.vertices[i].x -= 5;
+              //console.log(i, );
+              //var v = Math.atan2(lc_0.x - (sc_0.x + sc_0.vertices[i].x), lc_0.y - (sc_0.y + sc_0.vertices[i].y)) / Math.PI * -180;
+              //var x = 20 * Math.sin((v) * Math.PI / 180);
+              //var y = 20 * Math.cos((v) * Math.PI / 180);
+              //shadow.add_vertex({'x':sc_0.x + x,'y':sc_0.y + y});
+            };
+            self.add(shadow);
           };
           cast_shadows();
         }
@@ -56,7 +68,7 @@
         constructor:function(x, y, width, height, style){
           this.base(x, y, style);
           //this.is_rectangle(width, height);
-          this.is_polygon(width, 10, 0);
+          this.is_polygon(width, 20, 0);
         }
       });
       var LightCaster = ICKit.DisplayObject.extend({

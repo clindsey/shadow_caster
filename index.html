@@ -23,31 +23,39 @@
             ck.draw();
           };
           var create_shadow_casters = function(){
-            sc_0 = new ShadowCaster(120, 70, 20, 40, {'background-color':'#008800'});
+            sc_0 = new ShadowCaster(120, 70, 20, 20, {'background-color':'#008800'});
             self.add(sc_0);
           };
           create_shadow_casters();
           var create_light_casters = function(){
-            lc_0 = new LightCaster(180, 120, {'background-color':'#008888'});
+            lc_0 = new LightCaster(20, 70, {'background-color':'#008888'});
             self.add(lc_0);
           };
           create_light_casters();
           var shadow = new ICKit.DisplayObject(0, 0, {'background-color':'#000000'});
           self.add(shadow);
-          var line_0 = new Line({'x':0,'y':0}, {'x':0,'y':0}, '#000000');
+          var line_0 = new Line({'x':0,'y':0}, {'x':0,'y':0}, '#000088');
           self.add(line_0);
-          var line_1 = new Line({'x':0,'y':0}, {'x':0,'y':0}, '#000000');
+          var line_1 = new Line({'x':0,'y':0}, {'x':0,'y':0}, '#880000');
           self.add(line_1);
           var cast_shadows = function(){
             var faces = [];
             for(var i = 0, l = sc_0.vertices.length; i < l; i++){
               var curr = sc_0.vertices[i];
               var next = sc_0.vertices[(i + 1) % l];
-              var vx = curr.x - next.x;
-              var vy = curr.y - next.y;
-              var lx = lc_0.x - (sc_0.x - curr.x);
-              var ly = lc_0.y - (sc_0.y - curr.y);
-              var dp = vx * lx + vy * ly;
+              var p = {'x':sc_0.x,'y':sc_0.y};
+              var a = {'x':p.x + next.x,'y':p.y + next.y};
+              var b = {'x':p.x + curr.x,'y':p.y + curr.y};
+              var z = {'x':lc_0.x,'y':lc_0.y};
+
+              var ab = {'x':b.x - a.x,'y':b.y - a.y};
+              var az = {'x':z.x - (p.x + ab.x),'y':z.y - (p.y + ab.y)};
+
+              var dp = ab.x * az.x + ab.y * az.y;
+
+              var abm = Math.sqrt(ab.x * ab.x + ab.y * ab.y);
+              var azm = Math.sqrt(az.x * az.x + az.y * az.y);
+              var result = (Math.acos(dp / (abm * azm)) * (180 / Math.PI));
               faces[i] = dp > 0;
             };
             var shadow_start,
@@ -79,7 +87,7 @@
         constructor:function(x, y, width, height, style){
           this.base(x, y, style);
           //this.is_rectangle(width, height);
-          this.is_polygon(width, 20, 0)
+          this.is_polygon(width, 10, 0)
         }
       });
       var LightCaster = ICKit.DisplayObject.extend({

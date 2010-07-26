@@ -17,53 +17,65 @@
       };
       var FirstScene = ICKit.Scene.extend({
         setup:function(){
-          var shadow_caster = new ShadowCaster(220, 210, 20, 15, {'background-color':'#880000'});
-          this.add(shadow_caster.shadow);
-          this.add(shadow_caster);
-          var light_caster = new LightCaster(10, 10, {'background-color':'#008888'});
-          this.add(light_caster);
-          
-          this.mousemove = function(e){
-            light_caster.x = e.x;
-            light_caster.y = e.y;
-            cast_shadows();
-          };
-          var does_edge_cast_shadow = function(start, end, light){
-            var start_to_end = {'x':end.x - start.x,'y':end.y - start.y};
-            var normal = {'x':start_to_end.y,'y':0 - start_to_end.x};
-            var light_to_start = {'x':start.x - light.x,'y':start.y - light.y};
-            return (dot_product(normal, light_to_start) < 0) ? true : false;
-          };
-          var dot_product = function(va, vb){
-            return (va.x * vb.x + va.y * vb.y);
-          };
-          var project_point = function(point, light){
-            var light_to_point,
-                projected_point;
-            light_to_point = {'x':point.x - light.x,'y':point.y - light.y};
-            projected_point = {'x':point.x + light_to_point.x,'y':point.y + light_to_point.y};
-            return projected_point;
-          };
-          var cast_shadows = function(){
+          var self = this;
+          var cast_shadows = function(shadow_caster){
+            var project_point = function(point, light){
+              var light_to_point,
+                  projected_point;
+              light_to_point = {'x':point.x - light.x,'y':point.y - light.y};
+              projected_point = {'x':point.x + light_to_point.x,'y':point.y + light_to_point.y};
+              return projected_point;
+            };
+            var does_edge_cast_shadow = function(start, end, light){
+              var dot_product = function(va, vb){
+                return (va.x * vb.x + va.y * vb.y);
+              };
+              var start_to_end = {'x':end.x - start.x,'y':end.y - start.y};
+              var normal = {'x':start_to_end.y,'y':0 - start_to_end.x};
+              var light_to_start = {'x':start.x - light.x,'y':start.y - light.y};
+              return (dot_product(normal, light_to_start) < 0) ? true : false;
+            };
             var curr,
                 prev,
                 prev_index,
                 projected_point;
             shadow_caster.shadow.vertices = [];
-            for(var i = 0, l = shadow_caster.vertices.length - 1; i < l; i++){
-              prev_index = i - 1 > 0 ? i - 1 : l;
+            for(var i = 0, l = shadow_caster.vertices.length; i < l; i++){
+              prev_index = i - 1 >= 0 ? i - 1 : l - 1;
               curr = {'x':shadow_caster.vertices[i].x + shadow_caster.x,'y':shadow_caster.vertices[i].y + shadow_caster.y};
               prev = {'x':shadow_caster.vertices[prev_index].x + shadow_caster.x,'y':shadow_caster.vertices[prev_index].y + shadow_caster.y};
               if(!does_edge_cast_shadow(curr, prev, light_caster)) continue;
-              projected_point = project_point(curr, light_caster);
               shadow_caster.shadow.add_vertex({'x':curr.x,'y':curr.y});
+              projected_point = project_point(curr, light_caster);
               shadow_caster.shadow.add_vertex({'x':projected_point.x,'y':projected_point.y});
               projected_point = project_point(prev, light_caster);
               shadow_caster.shadow.add_vertex({'x':projected_point.x,'y':projected_point.y});
               shadow_caster.shadow.add_vertex({'x':prev.x,'y':prev.y});
             };
           };
-          cast_shadows();
+          var light_caster = new LightCaster(10, 10, {'background-color':'#008888'});
+          this.mousemove = function(e){
+            light_caster.x = e.x;
+            light_caster.y = e.y;
+            MakeSeven(shadow_casters).each(function(){
+              cast_shadows(this);
+            });
+          };
+          var shadow_casters = [
+              new ShadowCaster(220, 210, 20, 3, {'background-color':'#880000'}),
+              new ShadowCaster(120, 250, 12, 6, {'background-color':'#880000'}),
+              new ShadowCaster(380, 310, 20, 13, {'background-color':'#880000'}),
+              new ShadowCaster(280, 110, 20, 5, {'background-color':'#880000'}),
+              new ShadowCaster(580, 90, 10, 13, {'background-color':'#880000'})
+            ];
+          MakeSeven(shadow_casters).each(function(){
+            self.add(this.shadow);
+          });
+          MakeSeven(shadow_casters).each(function(){
+            self.add(this);
+            cast_shadows(this);
+          });
+          this.add(light_caster);
         }
       });
       var ShadowCaster = ICKit.DisplayObject.extend({
@@ -71,7 +83,7 @@
           this.base(x, y, style);
           this.is_polygon(radius, edge_count, 0);
           this.vertices.splice(this.vertices.length - 1, 1);
-          this.shadow = new Shadow(this, {'background-color':'#555555','border-width':1,'border-color':'#000000'});
+          this.shadow = new Shadow(this, {'background-color':'#000000','border-width':1,'border-color':'#000000'});
         }
       });
       var LightCaster = ICKit.DisplayObject.extend({
@@ -89,7 +101,7 @@
       });
     </script>
     <style type="text/css">
-      #stage { width:480px; height:480px; margin:0 auto; }
+      #stage { width:680px; height:380px; margin:0 auto; }
     </style>
   </head>
   <body onload="on_load()">

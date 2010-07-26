@@ -3,13 +3,14 @@
   <head>
     <meta http-equiv="content-type" content="text/html;charset=utf-8">
     <title>shadow_caster</title>
+    <script type="text/javascript" src="javascript/excanvas.js"></script>
     <script type="text/javascript" src="javascript/make_seven.js"></script>
     <script type="text/javascript" src="javascript/ickit.js"></script>
     <script type="text/javascript">
       var ck,
           timer;
       var on_load = function(){
-        ck = new ICKit('stage',FirstScene,{'background-color':'#DAE8F2'});
+        ck = new ICKit('stage',FirstScene,{'background-color':'#333333'});
         ck.draw();
         timer = setInterval(function(){
           ck.draw();
@@ -18,15 +19,18 @@
       var FirstScene = ICKit.Scene.extend({
         setup:function(){
           var shadow_casters = [
-              new ShadowCaster(220, 210, 20, 3, {'background-color':'#880000'}),
-              new ShadowCaster(120, 250, 12, 6, {'background-color':'#880000'}),
-              new ShadowCaster(380, 310, 20, 13, {'background-color':'#880000'}),
-              new ShadowCaster(280, 110, 20, 5, {'background-color':'#880000'}),
-              new ShadowCaster(580, 90, 10, 13, {'background-color':'#880000'})
+              new ShadowCaster(220, 210, 20, 3, {'background-color':'#660000'}),
+              new ShadowCaster(120, 250, 12, 6, {'background-color':'#660000'}),
+              new ShadowCaster(380, 310, 20, 13, {'background-color':'#660000'}),
+              new ShadowCaster(280, 110, 20, 5, {'background-color':'#660000'}),
+              new ShadowCaster(580, 90, 10, 13, {'background-color':'#660000'})
             ];
-          var light_caster = new LightCaster(10, 10, {'background-color':'#008888'});
-          this.add(light_caster);
           var self = this;
+          var light_caster = new LightCaster(10, 10, {'background-color':'#FFFF44'});
+          MakeSeven(light_caster.glows).each(function(){
+            self.add(this);
+          })
+          this.add(light_caster);
           MakeSeven(shadow_casters).each(function(){
             self.add(this.shadow);
           });
@@ -49,13 +53,18 @@
         constructor:function(x, y, radius, edge_count, style){
           this.base(x, y, style);
           this.is_polygon(radius, edge_count, 0);
-          this.shadow = new Shadow(this, {'background-color':'#000000'});
+          this.shadow = new Shadow(this, {'background-color':'#222222'});
         }
       });
       var LightCaster = ICKit.DisplayObject.extend({
         constructor:function(x, y, style){
           this.base(x, y, style);
           this.is_polygon(5, 10, 0);
+          this.glows = [
+              new Glow(this, this.radius * 24, 40, {'background-color':'rgba(255,255,0,0.02)'}),
+              new Glow(this, this.radius * 16, 28, {'background-color':'rgba(255,255,0,0.05)'}),
+              new Glow(this, this.radius * 10, 22, {'background-color':'rgba(255,255,0,0.1)'})
+            ];
         }
       });
       var Shadow = ICKit.DisplayObject.extend({
@@ -64,12 +73,31 @@
           this.base(0, 0, style);
         }
       });
+      var Glow = ICKit.DisplayObject.extend({
+        constructor:function(target, radius, edge_count, style){
+          this.parent = target;
+          this.base(this.parent.x, this.parent.y, style);
+          this.is_polygon(radius, edge_count, 0);
+        },
+        draw:function(graphics){
+          this.x = this.parent.x;
+          this.y = this.parent.y;
+          this.base(graphics);
+        }
+      });
       var cast_shadows = function(shadow_caster, light_caster){
         var project_point = function(point, light){
+          var radius = 800;
           var light_to_point,
-              projected_point;
+              projected_point,
+              extra_len,
+              vector_to_add,
+              ltp_len;
           light_to_point = {'x':point.x - light.x,'y':point.y - light.y};
-          projected_point = {'x':point.x + light_to_point.x,'y':point.y + light_to_point.y};
+          ltp_len = Math.sqrt((light_to_point.x * light_to_point.x) + (light_to_point.y * light_to_point.y));
+          extra_len = Math.abs(radius - ltp_len);
+          vector_to_add = {'x':(light_to_point.x / ltp_len) * extra_len,'y':(light_to_point.y / ltp_len) * extra_len};
+          projected_point = {'x':point.x + vector_to_add.x,'y':point.y + vector_to_add.y};
           return projected_point;
         };
         var does_edge_cast_shadow = function(start, end, light){
@@ -101,7 +129,7 @@
       };
     </script>
     <style type="text/css">
-      #stage { width:680px; height:380px; margin:0 auto; }
+      #stage { width:680px; height:380px; margin:0 auto; cursor:none; }
     </style>
   </head>
   <body onload="on_load()">

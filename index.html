@@ -8,8 +8,11 @@
     <script type="text/javascript" src="javascript/ickit.js"></script>
     <script type="text/javascript">
       var ck,
-          timer;
+          timer,
+          stage_offset,
+          ie = MakeSeven.fn.is_ie();
       var on_load = function(){
+        stage_offset = MakeSeven('#stage').offset();
         ck = new ICKit('stage',FirstScene,{'background-color':'#333333'});
         ck.draw();
         timer = setInterval(function(){
@@ -40,13 +43,25 @@
           MakeSeven(shadow_casters).each(function(){
             cast_shadows(this, light_caster);
           });
-          this.mousemove = function(e){
-            light_caster.x = e.x;
-            light_caster.y = e.y;
+          var draw_all_shadows = function(){
             MakeSeven(shadow_casters).each(function(){
               cast_shadows(this, light_caster);
             });
           };
+          MakeSeven("#stage").bind('mousemove',function(e){
+            var pos = get_x_y(e);
+            light_caster.x = pos.x;
+            light_caster.y = pos.y;
+            draw_all_shadows();
+          });
+          MakeSeven("#stage").bind('touchstart',function(e){
+            move_light(light_caster, e);
+            draw_all_shadows();
+          });
+          MakeSeven("#stage").bind('touchmove',function(e){
+            move_light(light_caster, e);
+            draw_shadows();
+          });
         }
       });
       var ShadowCaster = ICKit.DisplayObject.extend({
@@ -85,6 +100,27 @@
           this.base(graphics);
         }
       });
+      var move_light = function(light, e){
+        var pos = get_x_y(e.touches[0]);
+        light.x = pos.x;
+        light.y = pos.y;
+        e.preventDefault();
+      };
+      var get_x_y = function(e){
+        if(ie){
+          if(document.documentElement && (document.documentElement.scrollLeft || document.documentElement.scrollTop)){
+            x = e.clientX + document.documentElement.scrollLeft - stage_offset.left;
+            y = e.clientY + document.documentElement.scrollTop - stage_offset.top;
+          }else{
+            x = e.clientX + document.body.scrollLeft - stage_offset.left;
+            y = e.clientY + document.body.scrollTop - stage_offset.top;
+          };
+        }else{
+          x = e.pageX - stage_offset.left - 2;
+          y = e.pageY - stage_offset.top - 2;
+        };
+        return {'x':x,'y':y};
+      };
       var cast_shadows = function(shadow_caster, light_caster){
         var project_point = function(point, light){
           var radius = 800;

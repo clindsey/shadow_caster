@@ -10,15 +10,15 @@
     <script type="text/javascript" src="javascript/ickit.js"></script>
     <script type="text/javascript">
       var ck,
-          timer,
           stage_offset,
           ie = MakeSeven.fn.is_ie(),
           draw_all_shadows,
           travel_elements,
-          light_caster;
+          light_caster,
+          timer;
       var on_load = function(){
         stage_offset = MakeSeven('#stage').offset();
-        ck = new ICKit('stage',FirstScene,{'background-color':'#333333'});
+        ck = new ICKit('stage',ICKit.Scene,{'background-color':'#333333'});
         ck.draw();
         var bind_event_listeners = function(){
           MakeSeven("#stage").bind('mousemove',function(e){
@@ -34,11 +34,7 @@
           });
         };
         bind_event_listeners();
-        timer = setInterval(function(){
-          if(travel_elements) travel_elements();
-          draw_all_shadows();
-          ck.draw();
-        },1000/33);
+        switch_scene(FirstScene);
       };
       var FirstScene = ICKit.Scene.extend({
         setup:function(){
@@ -184,6 +180,15 @@
           this.base(graphics);
         }
       });
+      var switch_scene = function(new_scene){
+        if(timer) clearInterval(timer);
+        ck.switch_scene(new_scene);
+        timer = setInterval(function(){
+          if(travel_elements) travel_elements();
+          draw_all_shadows();
+          ck.draw();
+        },1000/33);
+      };
       var move_light = function(light, e){
         var get_x_y = function(e){
           if(ie){

@@ -21,7 +21,7 @@
       var FirstScene = ICKit.Scene.extend({
         setup:function(){
           var shadow_casters = [
-              new PolygonShadowCaster(220, 210, 20, 3, 0, {'background-color':'#660000'}),
+              new RotatingShadowCaster(220, 210, 20, 3, 0, {'background-color':'#660000'}),
               new PolygonShadowCaster(120, 250, 12, 6, 0, {'background-color':'#660000'}),
               new PolygonShadowCaster(380, 110, 20, 13, 0, {'background-color':'#660000'}),
               new PolygonShadowCaster(280, 110, 20, 5, 0, {'background-color':'#660000'}),
@@ -55,10 +55,12 @@
           MakeSeven("#stage").bind('touchstart',function(e){
             move_light(light_caster, e.touches[0]);
             draw_all_shadows();
+            e.preventDefault();
           });
           MakeSeven("#stage").bind('touchmove',function(e){
             move_light(light_caster, e.touches[0]);
             draw_all_shadows();
+            e.preventDefault();
           });
           timer = setInterval(function(){
             ck.draw();
@@ -77,7 +79,9 @@
           this.edge_count = edge_count;
           this.base(x, y, style);
           this.is_polygon(radius, edge_count, rotation);
-        },
+        }
+      });
+      var RotatingShadowCaster = PolygonShadowCaster.extend({
         draw:function(graphics){
           this.vertices = [];
           this.rotation++;
@@ -125,7 +129,6 @@
         var pos = get_x_y(e);
         light.x = pos.x;
         light.y = pos.y;
-        e.preventDefault();
       };
       var get_x_y = function(e){
         if(ie){

@@ -50,21 +50,18 @@
           };
           MakeSeven("#stage").bind('mousemove',function(e){
             move_light(light_caster, e);
-            draw_all_shadows();
           });
           MakeSeven("#stage").bind('touchstart',function(e){
             move_light(light_caster, e.touches[0]);
-            draw_all_shadows();
             e.preventDefault();
           });
           MakeSeven("#stage").bind('touchmove',function(e){
             move_light(light_caster, e.touches[0]);
-            draw_all_shadows();
             e.preventDefault();
           });
           timer = setInterval(function(){
-            ck.draw();
             draw_all_shadows();
+            ck.draw();
           },1000/33);
         }
       });
@@ -87,12 +84,6 @@
           this.rotation++;
           this.is_polygon(this.radius, this.edge_count, this.rotation)
           this.base(graphics);
-        }
-      });
-      var Platform = ShadowCaster.extend({
-        constructor:function(x, y, width, height, style){
-          this.base(x, y, style);
-          this.is_rectangle(width, height);
         }
       });
       var LightCaster = ICKit.DisplayObject.extend({
@@ -126,24 +117,24 @@
         }
       });
       var move_light = function(light, e){
+        var get_x_y = function(e){
+          if(ie){
+            if(document.documentElement && (document.documentElement.scrollLeft || document.documentElement.scrollTop)){
+              x = e.clientX + document.documentElement.scrollLeft - stage_offset.left;
+              y = e.clientY + document.documentElement.scrollTop - stage_offset.top;
+            }else{
+              x = e.clientX + document.body.scrollLeft - stage_offset.left;
+              y = e.clientY + document.body.scrollTop - stage_offset.top;
+            };
+          }else{
+            x = e.pageX - stage_offset.left - 2;
+            y = e.pageY - stage_offset.top - 2;
+          };
+          return {'x':x,'y':y};
+        };
         var pos = get_x_y(e);
         light.x = pos.x;
         light.y = pos.y;
-      };
-      var get_x_y = function(e){
-        if(ie){
-          if(document.documentElement && (document.documentElement.scrollLeft || document.documentElement.scrollTop)){
-            x = e.clientX + document.documentElement.scrollLeft - stage_offset.left;
-            y = e.clientY + document.documentElement.scrollTop - stage_offset.top;
-          }else{
-            x = e.clientX + document.body.scrollLeft - stage_offset.left;
-            y = e.clientY + document.body.scrollTop - stage_offset.top;
-          };
-        }else{
-          x = e.pageX - stage_offset.left - 2;
-          y = e.pageY - stage_offset.top - 2;
-        };
-        return {'x':x,'y':y};
       };
       var cast_shadows = function(shadow_caster, light_caster){
         var project_point = function(point, light){

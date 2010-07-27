@@ -17,18 +17,16 @@
         stage_offset = MakeSeven('#stage').offset();
         ck = new ICKit('stage',FirstScene,{'background-color':'#333333'});
         ck.draw();
-        timer = setInterval(function(){
-          ck.draw();
-        },1000/33);
       };
       var FirstScene = ICKit.Scene.extend({
         setup:function(){
           var shadow_casters = [
-              new ShadowCaster(220, 210, 20, 3, {'background-color':'#660000'}),
-              new ShadowCaster(120, 250, 12, 6, {'background-color':'#660000'}),
-              new ShadowCaster(380, 110, 20, 13, {'background-color':'#660000'}),
-              new ShadowCaster(280, 110, 20, 5, {'background-color':'#660000'}),
-              new ShadowCaster(180, 90, 10, 13, {'background-color':'#660000'})
+              new PolygonShadowCaster(220, 210, 20, 3, 0, {'background-color':'#660000'}),
+              new PolygonShadowCaster(120, 250, 12, 6, 0, {'background-color':'#660000'}),
+              new PolygonShadowCaster(380, 110, 20, 13, 0, {'background-color':'#660000'}),
+              new PolygonShadowCaster(280, 110, 20, 5, 0, {'background-color':'#660000'}),
+              new PolygonShadowCaster(180, 90, 10, 13, 0, {'background-color':'#660000'}),
+              new PolygonShadowCaster(90, 70, 10, 4, 10, {'background-color':'#660000'})
             ];
           var self = this;
           var light_caster = new LightCaster(10, 10, {'background-color':'#FFFF44'});
@@ -51,26 +49,46 @@
             });
           };
           MakeSeven("#stage").bind('mousemove',function(e){
-            var pos = get_x_y(e);
-            light_caster.x = pos.x;
-            light_caster.y = pos.y;
+            move_light(light_caster, e);
             draw_all_shadows();
           });
           MakeSeven("#stage").bind('touchstart',function(e){
-            move_light(light_caster, e);
+            move_light(light_caster, e.touches[0]);
             draw_all_shadows();
           });
           MakeSeven("#stage").bind('touchmove',function(e){
-            move_light(light_caster, e);
+            move_light(light_caster, e.touches[0]);
             draw_all_shadows();
           });
+          timer = setInterval(function(){
+            ck.draw();
+            draw_all_shadows();
+          },1000/33);
         }
       });
       var ShadowCaster = ICKit.DisplayObject.extend({
-        constructor:function(x, y, radius, edge_count, style){
+        constructor:function(x, y, style){
           this.base(x, y, style);
-          this.is_polygon(radius, edge_count, 0);
           this.shadow = new Shadow(this, {'background-color':'#222222'});
+        }
+      });
+      var PolygonShadowCaster = ShadowCaster.extend({
+        constructor:function(x, y, radius, edge_count, rotation, style){
+          this.edge_count = edge_count;
+          this.base(x, y, style);
+          this.is_polygon(radius, edge_count, rotation);
+        },
+        draw:function(graphics){
+          this.vertices = [];
+          this.rotation++;
+          this.is_polygon(this.radius, this.edge_count, this.rotation)
+          this.base(graphics);
+        }
+      });
+      var Platform = ShadowCaster.extend({
+        constructor:function(x, y, width, height, style){
+          this.base(x, y, style);
+          this.is_rectangle(width, height);
         }
       });
       var LightCaster = ICKit.DisplayObject.extend({
@@ -78,9 +96,10 @@
           this.base(x, y, style);
           this.is_polygon(5, 10, 0);
           this.glows = [
-              new Glow(this, this.radius * 24, 40, {'background-color':'rgba(255,255,0,0.02)'}),
-              new Glow(this, this.radius * 16, 28, {'background-color':'rgba(255,255,0,0.05)'}),
-              new Glow(this, this.radius * 10, 22, {'background-color':'rgba(255,255,0,0.1)'})
+              new Glow(this, this.radius * 40, 40, {'background-color':'rgba(255,255,0,0.02)'}),
+              new Glow(this, this.radius * 30, 50, {'background-color':'rgba(255,255,0,0.03)'}),
+              new Glow(this, this.radius * 20, 40, {'background-color':'rgba(255,255,0,0.02)'}),
+              new Glow(this, this.radius * 10, 26, {'background-color':'rgba(255,255,0,0.01)'})
             ];
         }
       });
@@ -103,7 +122,7 @@
         }
       });
       var move_light = function(light, e){
-        var pos = get_x_y(e.touches[0]);
+        var pos = get_x_y(e);
         light.x = pos.x;
         light.y = pos.y;
         e.preventDefault();

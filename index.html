@@ -12,57 +12,66 @@
       var ck,
           timer,
           stage_offset,
-          ie = MakeSeven.fn.is_ie();
+          ie = MakeSeven.fn.is_ie(),
+          draw_all_shadows;
       var on_load = function(){
         stage_offset = MakeSeven('#stage').offset();
         ck = new ICKit('stage',FirstScene,{'background-color':'#333333'});
         ck.draw();
+        timer = setInterval(function(){
+          draw_all_shadows();
+          ck.draw();
+        },1000/33);
       };
       var FirstScene = ICKit.Scene.extend({
         setup:function(){
-          var shadow_casters = [
-              new RotatingShadowCaster(220, 210, 20, 3, 0, {'background-color':'#660000'}),
-              new PolygonShadowCaster(120, 250, 12, 6, 0, {'background-color':'#660000'}),
-              new PolygonShadowCaster(380, 110, 20, 13, 0, {'background-color':'#660000'}),
-              new PolygonShadowCaster(280, 110, 20, 5, 0, {'background-color':'#660000'}),
-              new PolygonShadowCaster(180, 90, 10, 13, 0, {'background-color':'#660000'}),
-              new PolygonShadowCaster(90, 70, 10, 4, 10, {'background-color':'#660000'})
-            ];
-          var self = this;
-          var light_caster = new LightCaster(10, 10, {'background-color':'#FFFF44'});
-          MakeSeven(light_caster.glows).each(function(){
-            self.add(this);
-          })
-          this.add(light_caster);
-          MakeSeven(shadow_casters).each(function(){
-            self.add(this.shadow);
-          });
-          MakeSeven(shadow_casters).each(function(){
-            self.add(this);
-          });
-          MakeSeven(shadow_casters).each(function(){
-            cast_shadows(this, light_caster);
-          });
-          var draw_all_shadows = function(){
+          var self = this,
+              light_caster,
+              shadow_casters;
+          var create_elements = function(){
+            shadow_casters = [
+                new RotatingShadowCaster(220, 210, 20, 3, 0, {'background-color':'#660000'}),
+                new PolygonShadowCaster(120, 250, 12, 6, 0, {'background-color':'#660000'}),
+                new PolygonShadowCaster(380, 110, 20, 13, 0, {'background-color':'#660000'}),
+                new PolygonShadowCaster(280, 110, 20, 5, 0, {'background-color':'#660000'}),
+                new PolygonShadowCaster(180, 90, 10, 13, 0, {'background-color':'#660000'}),
+                new PolygonShadowCaster(90, 70, 10, 4, 10, {'background-color':'#660000'})
+              ];
+            light_caster = new LightCaster(10, 10, {'background-color':'#FFFF44'});
+            MakeSeven(light_caster.glows).each(function(){
+              self.add(this);
+            })
+            self.add(light_caster);
+            MakeSeven(shadow_casters).each(function(){
+              self.add(this.shadow);
+            });
+            MakeSeven(shadow_casters).each(function(){
+              self.add(this);
+            });
             MakeSeven(shadow_casters).each(function(){
               cast_shadows(this, light_caster);
             });
           };
-          MakeSeven("#stage").bind('mousemove',function(e){
-            move_light(light_caster, e);
-          });
-          MakeSeven("#stage").bind('touchstart',function(e){
-            move_light(light_caster, e.touches[0]);
-            e.preventDefault();
-          });
-          MakeSeven("#stage").bind('touchmove',function(e){
-            move_light(light_caster, e.touches[0]);
-            e.preventDefault();
-          });
-          timer = setInterval(function(){
-            draw_all_shadows();
-            ck.draw();
-          },1000/33);
+          create_elements();
+          var bind_event_listeners = function(){
+            MakeSeven("#stage").bind('mousemove',function(e){
+              move_light(light_caster, e);
+            });
+            MakeSeven("#stage").bind('touchstart',function(e){
+              move_light(light_caster, e.touches[0]);
+              e.preventDefault();
+            });
+            MakeSeven("#stage").bind('touchmove',function(e){
+              move_light(light_caster, e.touches[0]);
+              e.preventDefault();
+            });
+          };
+          bind_event_listeners();
+          draw_all_shadows = function(){
+            MakeSeven(shadow_casters).each(function(){
+              cast_shadows(this, light_caster);
+            });
+          }
         }
       });
       var ShadowCaster = ICKit.DisplayObject.extend({

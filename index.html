@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <meta name="viewport" content="width=500;initial-scale=1.0;maximum-scale=1.0;user-scalable=0;">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>shadow_caster</title>
+    <script type="text/javascript" src="javascript/excanvas.js"></script>
+    <script type="text/javascript" src="javascript/make_seven.js"></script>
+    <script type="text/javascript" src="javascript/ickit.js"></script>
+    <script type="text/javascript">
+      var ck,
+          timer,
+          stage_offset,
+          ie = MakeSeven.fn.is_ie(),
+          draw_all_shadows;
+      var on_load = function(){
+        stage_offset = MakeSeven('#stage').offset();
+        ck = new ICKit('stage',FirstScene,{'background-color':'#333333'});
+        ck.draw();
+        timer = setInterval(function(){
+          draw_all_shadows();
+          ck.draw();
+        },1000/33);
+      };
+      var FirstScene = ICKit.Scene.extend({
+        setup:function(){
+          var self = this,
+              light_caster,
+              shadow_casters;
+          var create_elements = function(){
+            shadow_casters = [
+                new RotatingShadowCaster(220,210,20,3,0,{'background-color':'#660000'}),
+                new PolygonShadowCaster(120,250,12,6,0,{'background-color':'#660000'}),
+                new PolygonShadowCaster(380,110,20,13,0,{'background-color':'#660000'}),
+                new PolygonShadowCaster(280,110,20,5,0,{'background-color':'#660000'}),
+                new PolygonShadowCaster(180,90,10,13,0,{'background-color':'#660000'}),
+                new PolygonShadowCaster(90,70,10,4,10,{'background-color':'#660000'})
+              ];
+            light_caster = new LightCaster(10,10,{'background-color':'#FFFF44'});
+            MakeSeven(light_caster.glows).each(function(){
+              self.add(this);
+            })
+            self.add(light_caster);
+            MakeSeven(shadow_casters).each(function(){
+              self.add(this.shadow);
+            });
+            MakeSeven(shadow_casters).each(function(){
+              self.add(this);
+            });
+            MakeSeven(shadow_casters).each(function(){
+              cast_shadows(this,light_caster);
+            });
+          };
+          create_elements();
+          var bind_event_listeners = function(){
+            MakeSeven("#stage").bind('mousemove',function(e){
+              move_light(light_caster,e);
+            });
+            MakeSeven("#stage").bind('touchstart',function(e){
+              move_light(light_caster,e.touches[0]);
+              e.preventDefault();
+            });
+            MakeSeven("#stage").bind('touchmove',function(e){
+              move_light(light_caster,e.touches[0]);
+              e.preventDefault();
+            });
+          };
+          bind_event_listeners();
+          draw_all_shadows = function(){
+            MakeSeven(shadow_casters).each(function(){
+              cast_shadows(this,light_caster);
+            });
+          }
+        }
+      });
+      var ShadowCaster = ICKit.DisplayObject.extend({
+        constructor:function(x,y,style){
+          this.base(x,y,style);
+          this.shadow = new Shadow(this,{'background-color':'#222222'});
+        }
+      });
+      var PolygonShadowCaster = ShadowCaster.extend({
+        constructor:function(x,y,radius,edge_count,rotation,style){
+          this.edge_count = edge_count;
+          this.base(x,y,style);
+          this.is_polygon(radius,edge_count,rotation);
+        }
+      });
+      var RotatingShadowCaster = PolygonShadowCaster.extend({
+        draw:function(graphics){
+          this.vertices = [];
+          this.rotation++;
+          this.is_polygon(this.radius,this.edge_count,this.rotation)
+          this.base(graphics);
+        }
+      });
+      var LightCaster = ICKit.DisplayObject.extend({
+        constructor:function(x,y,style){
+          this.base(x,y,style);
+          this.is_polygon(5,10,0);
+          this.glows = [
+              new Glow(this,this.radius * 40,40,{'background-color':'rgba(255,255,0,0.02)'}),
+              new Glow(this,this.radius * 30,50,{'background-color':'rgba(255,255,0,0.03)'}),
+              new Glow(this,this.radius * 20,40,{'background-color':'rgba(255,255,0,0.02)'}),
+              new Glow(this,this.radius * 10,26,{'background-color':'rgba(255,255,0,0.01)'})
+            ];
+        }
+      });
+      var Shadow = ICKit.DisplayObject.extend({
+        constructor:function(target,style){
+          this.parent = target;
+          this.base(0,0,style);
+        }
+      });
+      var Glow = ICKit.DisplayObject.extend({
+        constructor:function(target,radius,edge_count,style){
+          this.parent = target;
+          this.base(this.parent.x,this.parent.y,style);
+          this.is_polygon(radius,edge_count,0);
+        },
+        draw:function(graphics){
+          this.x = this.parent.x;
+          this.y = this.parent.y;
+          this.base(graphics);
+        }
+      });
+      var move_light = function(light,e){
+        var get_x_y = function(e){
+          if(ie){
+            if(document.documentElement && (document.documentElement.scrollLeft || document.documentElement.scrollTop)){
+              x = e.clientX + document.documentElement.scrollLeft - stage_offset.left;
+              y = e.clientY + document.documentElement.scrollTop - stage_offset.top;
+            }else{
+              x = e.clientX + document.body.scrollLeft - stage_offset.left;
+              y = e.clientY + document.body.scrollTop - stage_offset.top;
+            };
+          }else{
+            x = e.pageX - stage_offset.left - 2;
+            y = e.pageY - stage_offset.top - 2;
+          };
+          return {'x':x,'y':y};
+        };
+        var pos = get_x_y(e);
+        light.x = pos.x;
+        light.y = pos.y;
+      };
+      var cast_shadows = function(shadow_caster,light_caster){
+        var project_point = function(point,light){
+          var radius = 800;
+          var light_to_point,
+              projected_point,
+              extra_len,
+              vector_to_add,
+              ltp_len;
+          light_to_point = {'x':point.x - light.x,'y':point.y - light.y};
+          ltp_len = Math.sqrt((light_to_point.x * light_to_point.x) + (light_to_point.y * light_to_point.y));
+          extra_len = Math.abs(radius - ltp_len);
+          vector_to_add = {'x':(light_to_point.x / ltp_len) * extra_len,'y':(light_to_point.y / ltp_len) * extra_len};
+          projected_point = {'x':point.x + vector_to_add.x,'y':point.y + vector_to_add.y};
+          return projected_point;
+        };
+        var does_edge_cast_shadow = function(start,end,light){
+          var dot_product = function(va,vb){
+            return (va.x * vb.x + va.y * vb.y);
+          };
+          var start_to_end = {'x':end.x - start.x,'y':end.y - start.y};
+          var normal = {'x':start_to_end.y,'y':0 - start_to_end.x};
+          var light_to_start = {'x':start.x - light.x,'y':start.y - light.y};
+          return (dot_product(normal,light_to_start) < 0) ? true : false;
+        };
+        var curr,
+            prev,
+            prev_index,
+            projected_point;
+        shadow_caster.shadow.vertices = [];
+        for(var i = 0,l = shadow_caster.vertices.length; i < l; i++){
+          prev_index = i - 1 >= 0 ? i - 1 : l - 1;
+          curr = {'x':shadow_caster.vertices[i].x + shadow_caster.x,'y':shadow_caster.vertices[i].y + shadow_caster.y};
+          prev = {'x':shadow_caster.vertices[prev_index].x + shadow_caster.x,'y':shadow_caster.vertices[prev_index].y + shadow_caster.y};
+          if(!does_edge_cast_shadow(curr,prev,light_caster)) continue;
+          shadow_caster.shadow.add_vertex({'x':curr.x,'y':curr.y});
+          projected_point = project_point(curr,light_caster);
+          shadow_caster.shadow.add_vertex({'x':projected_point.x,'y':projected_point.y});
+          projected_point = project_point(prev,light_caster);
+          shadow_caster.shadow.add_vertex({'x':projected_point.x,'y':projected_point.y});
+          shadow_caster.shadow.add_vertex({'x':prev.x,'y':prev.y});
+        };
+      };
+    </script>
+    <style type="text/css">
+      #stage { width:480px; height:320px; margin:0 auto; cursor:none; }
+    </style>
+  </head>
+  <body onload="on_load()">
+    <div id="stage">
+    </div>
+    <p>
+      <a href="http://github.com/clindsey/shadow_caster/">get the code here</a>
+    </p>
+  </body>
+</html>
